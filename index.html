@@ -41,7 +41,7 @@
             <template v-for="task in tasks.filter((x) => x.listId == todoList.id)">
               <div
                 class="box level py-3 my-2"
-                v-show="(!task.isComplete && task.isFlag )|| (task.isComplete && task.isFlag && !isHide) || (task.isComplete && !task.isFlag  && !isHide && !isShow) || (!task.isComplete && !task.isFlag  && !isShow)"
+                v-show="(!task.isComplete && task.isFlag )|| (task.isComplete && task.isFlag && !todoList.isHide) || (task.isComplete && !task.isFlag  && !todoList.isHide && !todoList.isShow) || (!task.isComplete && !task.isFlag  && !todoList.isShow)"
               >
                 <div class="control">
                   <label class="checkbox">
@@ -82,13 +82,13 @@
                 <div class="content">
                   <div class="control">
                     <label class="checkbox">
-                      <input type="checkbox" v-model="isHide" />
+                      <input type="checkbox" v-model="todoList.isHide" />
                       Hide completed tasks
                     </label>
                   </div>
                   <div class="control">
                     <label class="checkbox">
-                      <input type="checkbox" v-model="isShow" />
+                      <input type="checkbox" v-model="todoList.isShow" />
                       Show only flagged tasks
                     </label>
                   </div>
@@ -109,13 +109,13 @@
                 <div class="content">
                   <div class="columns">
                   <div class="control">
-                      <input type="radio" :name="todoList.id" @click="sortType='alphabet'" value="alphabet" checked>
+                      <input type="radio" :name="todoList.id" @click="sortListId=todoList.id, todoList.sortType='alphabet', changeCount++" value="alphabet" checked>
                       <label>Sort alphabetically</label><br>
-                      <input type="radio" :name="todoList.id" v-model="sortType" value="incomplete">
+                      <input type="radio" :name="todoList.id" @click="sortListId=todoList.id, todoList.sortType='incomplete', changeCount++"value="incomplete">
                       <label>Sort incomplete task first</label><br>
-                      <input type="radio" :name="todoList.id" v-model="sortType" value="flagged">
+                      <input type="radio" :name="todoList.id" @click="sortListId=todoList.id, todoList.sortType='flagged', changeCount++"value="flagged">
                       <label>Sort flagged task first</label><br>
-                      <input type="radio" :name="todoList.id" v-model="sortType" value="date">
+                      <input type="radio" :name="todoList.id" @click="sortListId=todoList.id, todoList.sortType='date', changeCount++"value="date">
                       <label>Sort by due date(ascending)</label>
                   </div>
                 </div>
@@ -394,16 +394,23 @@
         el: "#app",
         data: {
           todoLists: [
-            { id: 1, name: "ToDo List" },
-            { id: 2, name: "Not ToDo List" },
+            { id: 1, name: "ToDo List", isHide: false, isShow: false, sortType: ""},
+            { id: 2, name: "Not ToDo List", isHide: false, isShow: false, sortType: ""},
           ],
-
           tasks: [
             { id: 1, name: "task1", isComplete: false, date:'2021-03-01', isFlag: false, color: 'red',  listId: 1},
-            { id: 2, name: "task2", isComplete: false, date:'2020-05-01', isFlag: true, color: 'lime',  listId: 2},
-            { id: 3, name: "task3", isComplete: false, date:'2021-06-01', isFlag: false, color: 'black',  listId: 1},
+            { id: 2, name: "ccccc", isComplete: false, date:'2020-05-01', isFlag: true, color: 'lime',  listId: 1},
+            { id: 3, name: "bbbbbb", isComplete: false, date:'2021-06-01', isFlag: false, color: 'black',  listId: 1},
+            { id: 4, name: "aaaaaa", isComplete: false, date:'', isFlag: true, color: 'red',  listId: 1},
+            { id: 5, name: "zzzzzz", isComplete: false, date:'', isFlag: false, color: 'black',  listId: 1},
+            { id: 6, name: "task1", isComplete: false, date:'2021-03-01', isFlag: false, color: 'red',  listId: 2},
+            { id: 7, name: "ccccc", isComplete: false, date:'2020-05-01', isFlag: true, color: 'lime',  listId: 2},
+            { id: 8, name: "bbbbbb", isComplete: false, date:'2021-06-01', isFlag: false, color: 'black',  listId: 2},
+            { id: 9, name: "aaaaaa", isComplete: false, date:'', isFlag: true, color: 'red',  listId: 2},
+            { id: 10, name: "zzzzzz", isComplete: false, date:'', isFlag: false, color: 'black',  listId: 2},
           ],
-          idCouter: 3,
+          changeCount:0, 
+          idCouter: 10,
           idListCouter: 2,
           newListName:"",
           newTaskListId:"",
@@ -428,9 +435,7 @@
           delListId: 0,
           delTaskName: "",
           delTaskId: 0,
-          isHide: false,
-          isShow: false,
-          sortType: "",
+          sortListId:0,
         },
         computed: {
           completedCount() {
@@ -455,7 +460,7 @@
           },
           checkEditListName(){
             return (this.editListName === "") ? true : false;
-          }
+          },
         },
         methods: {
           addList(){
@@ -466,6 +471,9 @@
             this.todoLists.push({
               id: this.idListCouter,
               name: this.newListName,
+              isHide: false,
+              isShow: false,
+              sortType: ""
             });
             this.newListName = ""
             this.AddListModal = false;
@@ -495,17 +503,25 @@
             this.isFlagNewTask = false,
             this.dateNewTask = "",
             this.newTaskListId = "",
-            this.resort();
+            this.resortEveryThing()
           },
-          resort() {
-            if (this.sortType === "incomplete") {
-              this.sortTaskByStatus();
-            } else if  (this.sortType === "flagged") {
-              this.sortTaskByFlagged();
-            } else if  (this.sortType === "date") {
-              this.sortTaskByDate();
+          resort(id) {
+            let selectedList = this.todoLists.filter((x) => x.id == id)[0];
+            console.log(selectedList.name)
+            if (selectedList.sortType === "incomplete") {
+              this.sortTaskByStatus(selectedList.id);
+              console.log("incomplete");
+            } else if  (selectedList.sortType === "flagged") {
+              this.sortTaskByFlagged(selectedList.id);
+              console.log("flagged");
+
+            } else if  (selectedList.sortType === "date") {
+              this.sortTaskByDate(selectedList.id);
+              console.log("date");
+
             } else {
-              this.sortTaskByName();
+              this.sortTaskByName(selectedList.id);
+              console.log("alpha");
             }
           },
           editTask(id) {
@@ -531,7 +547,7 @@
             selectedTask.isFlag = this.editTaskFlag;
             selectedTask.listId = this.editTaskListId;
             this.EditModal = false;
-            this.resort();
+            this.resortEveryThing()
           },
           editList(id) {
             this.EditListModal = true;
@@ -577,8 +593,13 @@
             this.DelListModal = false;
           },
 
-          sortTaskByStatus() {
+          sortTaskByStatus(id) {
             function compare(a, b) {
+              if(a.listId !== id){
+                return 1;
+              }if(b.listId !== id){
+                return -1;
+              }
               if (a.isComplete && !b.isComplete) {
                 return 1;
               }
@@ -589,8 +610,13 @@
             }
             this.tasks.sort(compare);
           },
-          sortTaskByFlagged() {
+          sortTaskByFlagged(id) {
             function compare(a, b) {
+              if(a.listId !== id){
+                return 1;
+              }if(b.listId !== id){
+                return -1;
+              }
               if (a.isFlag && !b.isFlag) {
                 return -1;
               }
@@ -601,8 +627,13 @@
             }
             this.tasks.sort(compare);
           },
-          sortTaskByDate() {
+          sortTaskByDate(id) {
             function compare(a, b) {
+              if(a.listId !== id){
+                return 1;
+              }if(b.listId !== id){
+                return -1;
+              }
               if(a.date === ""){
                 return 1;
               }if(b.date === ""){
@@ -617,8 +648,13 @@
             }
             this.tasks.sort(compare);
           },
-          sortTaskByName() {
+          sortTaskByName(id) {
             function compare(a, b) {
+              if(a.listId !== id){
+                return 1;
+              }if(b.listId !== id){
+                return -1;
+              }
               if (a.name < b.name) {
                 return -1;
               }
@@ -629,14 +665,19 @@
             }
             this.tasks.sort(compare);
           },
+          resortEveryThing(){
+            for (let i = 0; i < this.todoLists.length; i++) {
+            this.resort(this.todoLists[i].id);
+          }
+          }
         },
         watch: {
-          sortType(newVal, oldVal) {
-              this.resort();
+          changeCount(newVal) {
+            this.resort(this.sortListId)
           },
         },
         created() {
-          this.resort();
+          this.resortEveryThing()
         },
         
       });
