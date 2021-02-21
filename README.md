@@ -1,2 +1,2 @@
 # TodoList
-create by vue.js
+create by vue.js + bulma
