@@ -25,7 +25,7 @@
       <div class="container">
         <p class="subtitle my-2">Completed: {{completedCount}} Tasks</p>
         <p class="subtitle my-2">Incomplete: {{incompleteCount}} Tasks</p>
-        <p class="subtitle my-2">Flagged: {{flaggedCount}} Tasks</p>
+        <p class="subtitle my-2">Flagged: {{flaggedCount}} Tasks</p><br>
 
         <div class="columns" v-for="todoList in todoLists">
         
@@ -161,7 +161,7 @@
                 placeholder="Due date"
                 type="text"
                 onfocus="(this.type='date')"
-              ></input>
+              >
             </p>
             <div v-show="dateNewTask !== ''">
             <p style="text-align: center; align-items: center; color: gray;" @click="dateNewTask=''">cancel date</p>
@@ -394,24 +394,24 @@
         el: "#app",
         data: {
           todoLists: [
-            { id: 1, name: "ToDo List", isHide: false, isShow: false, sortType: ""},
-            { id: 2, name: "Not ToDo List", isHide: false, isShow: false, sortType: ""},
+            // { id: 1, name: "ToDo List", isHide: false, isShow: false, sortType: ""},
+            // { id: 2, name: "Not ToDo List", isHide: false, isShow: false, sortType: ""},
           ],
           tasks: [
-            { id: 1, name: "task1", isComplete: false, date:'2021-03-01', isFlag: false, color: 'red',  listId: 1},
-            { id: 2, name: "ccccc", isComplete: false, date:'2020-05-01', isFlag: true, color: 'lime',  listId: 1},
-            { id: 3, name: "bbbbbb", isComplete: false, date:'2021-06-01', isFlag: false, color: 'black',  listId: 1},
-            { id: 4, name: "aaaaaa", isComplete: false, date:'', isFlag: true, color: 'red',  listId: 1},
-            { id: 5, name: "zzzzzz", isComplete: false, date:'', isFlag: false, color: 'black',  listId: 1},
-            { id: 6, name: "task1", isComplete: false, date:'2021-03-01', isFlag: false, color: 'red',  listId: 2},
-            { id: 7, name: "ccccc", isComplete: false, date:'2020-05-01', isFlag: true, color: 'lime',  listId: 2},
-            { id: 8, name: "bbbbbb", isComplete: false, date:'2021-06-01', isFlag: false, color: 'black',  listId: 2},
-            { id: 9, name: "aaaaaa", isComplete: false, date:'', isFlag: true, color: 'red',  listId: 2},
-            { id: 10, name: "zzzzzz", isComplete: false, date:'', isFlag: false, color: 'black',  listId: 2},
+            // { id: 1, name: "task1", isComplete: false, date:'2021-03-01', isFlag: false, color: 'red',  listId: 1},
+            // { id: 2, name: "ccccc", isComplete: false, date:'2020-05-01', isFlag: true, color: 'lime',  listId: 1},
+            // { id: 3, name: "bbbbbb", isComplete: false, date:'2021-06-01', isFlag: false, color: 'black',  listId: 1},
+            // { id: 4, name: "aaaaaa", isComplete: false, date:'', isFlag: true, color: 'red',  listId: 1},
+            // { id: 5, name: "zzzzzz", isComplete: false, date:'', isFlag: false, color: 'black',  listId: 1},
+            // { id: 6, name: "task1", isComplete: false, date:'2021-03-01', isFlag: false, color: 'red',  listId: 2},
+            // { id: 7, name: "ccccc", isComplete: false, date:'2020-05-01', isFlag: true, color: 'lime',  listId: 2},
+            // { id: 8, name: "bbbbbb", isComplete: false, date:'2021-06-01', isFlag: false, color: 'black',  listId: 2},
+            // { id: 9, name: "aaaaaa", isComplete: false, date:'', isFlag: true, color: 'red',  listId: 2},
+            // { id: 10, name: "zzzzzz", isComplete: false, date:'', isFlag: false, color: 'black',  listId: 2},
           ],
           changeCount:0, 
-          idCouter: 10,
-          idListCouter: 2,
+          idCouter: 0,
+          idListCouter: 0,
           newListName:"",
           newTaskListId:"",
           newTaskName: "",
@@ -589,8 +589,10 @@
               return x.id == this.delListId;
             })[0];
             this.todoLists.splice(this.todoLists.indexOf(selectedList), 1);
-            
             this.DelListModal = false;
+
+            let otherTaskId = this.tasks.filter((x) => x.listId !== this.delListId);
+            this.tasks = otherTaskId;
           },
 
           sortTaskByStatus(id) {
